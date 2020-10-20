@@ -24,6 +24,10 @@
     margin-right: 30px;
 }
 
+#listMusic #datePicker div.react-datepicker-wrapper div.react-datepicker__input-container input  {
+    border: 1px solid #cccccc;
+    border-radius: 0.25rem;
+}
 @media (max-width: 767px) {
     #verticalLine {
         height: 0px;
