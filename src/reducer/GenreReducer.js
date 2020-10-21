@@ -1,25 +1,30 @@
 import {
-    MUSIC_ADD_MUSIC,
-    MUSIC_MODIFY_MUSIC,
-    MUSIC_DELETE_MUSIC
+    GENRE_SET_GENRES_ACTION,
+    GENRE_SET_CURRENTGENRE_ACTION,
+    GENRE_ADD_ACTION,
+    GENRE_MODIFY_ACTION,
+    GENRE_DELETE_ACTION
 } from "../constant/index"
 
-const initialState = {
-    uploadedImage: null,
-    selectedModel: "",
-};
+export const initialGenreState = {
+    genres: [],
+    currentGenre: null,
+}
 
-function MusicReducer(state = initialState, action) {
+export const GenreReducer = (state, action) => {
     switch (action.type) {
-        case MUSIC_ADD_MUSIC:
-            return { ...state, music: action.payload.music }
-        case MUSIC_MODIFY_MUSIC:
-            return { ...state, music: action.payload.music }
-        case MUSIC_DELETE_MUSIC:
-            return { ...state, music_id: action.payload.music_id }
+        case GENRE_SET_GENRES_ACTION:
+            return {...state, genres: action.payload}
+        case GENRE_SET_CURRENTGENRE_ACTION:
+            return {...state, currentGenre: action.payload}
+        case GENRE_ADD_ACTION:
+            return { ...state, statusCode: action.payload.statusCode }
+        case GENRE_MODIFY_ACTION:
+            return { ...state, statusCode: action.payload.statusCode }
+        case GENRE_DELETE_ACTION:
+            return { ...state, statusCode: action.payload.statusCode }
         default:
             return state;
     }
 }
 
-export default MusicReducer;

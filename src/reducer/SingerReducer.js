@@ -1,25 +1,30 @@
 import {
-    MUSIC_ADD_MUSIC,
-    MUSIC_MODIFY_MUSIC,
-    MUSIC_DELETE_MUSIC
+    SINGER_SET_SINGERS_ACTION,
+    SINGER_SET_CURRENTSINGER_ACTION,
+    SINGER_ADD_ACTION,
+    SINGER_MODIFY_ACTION,
+    SINGER_DELETE_ACTION
 } from "../constant/index"
 
-const initialState = {
-    uploadedImage: null,
-    selectedModel: "",
-};
+export const initialSingerState = {
+    singers: [],
+    currentSinger: null,
+}
 
-function MusicReducer(state = initialState, action) {
+export const SingerReducer = (state, action) => {
     switch (action.type) {
-        case MUSIC_ADD_MUSIC:
-            return { ...state, music: action.payload.music }
-        case MUSIC_MODIFY_MUSIC:
-            return { ...state, music: action.payload.music }
-        case MUSIC_DELETE_MUSIC:
-            return { ...state, music_id: action.payload.music_id }
+        case SINGER_SET_SINGERS_ACTION:
+            return {...state, singers: action.payload}
+        case SINGER_SET_CURRENTSINGER_ACTION:
+            return {...state, currentSinger: action.payload}
+        case SINGER_ADD_ACTION:
+            return { ...state, statusCode: action.payload.statusCode }
+        case SINGER_MODIFY_ACTION:
+            return { ...state, statusCode: action.payload.statusCode }
+        case SINGER_DELETE_ACTION:
+            return { ...state, statusCode: action.payload.statusCode }
         default:
             return state;
     }
 }
 
-export default MusicReducer;
