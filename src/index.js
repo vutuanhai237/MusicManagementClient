@@ -12,7 +12,7 @@ import "./index.css"
 render(
   <StrictMode>
     <Provider store={store}>
-      <BrowserRouter>    
+      <BrowserRouter>
         <Route component={App} />
       </BrowserRouter>
     </Provider>

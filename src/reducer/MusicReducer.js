@@ -1,30 +1,27 @@
 import {
-    MUSIC_SET_ACTION,
+    MUSIC_SET_MUSICS_ACTION,
     MUSIC_ADD_ACTION,
     MUSIC_MODIFY_ACTION,
     MUSIC_DELETE_ACTION
-} from "../constant/index"
+} from "../constant/actionConstant"
 
 export const initialMusicState = {
     musics: [],
-    currentMusic: null,
-    statusCode: "",
-};
+    statusCode: 0
+}
 
 export const MusicReducer = (state, action) => {
     switch (action.type) {
-        case MUSIC_SET_ACTION:
-            console.log(action)
-            return { ...state, musics: action.payload }
+        case MUSIC_SET_MUSICS_ACTION:
+            return {...state, musics: action.payload}
         case MUSIC_ADD_ACTION:
-            return { ...state, statusCode: action.payload.statusCode }
+            return { ...state, statusCode: action.payload }
         case MUSIC_MODIFY_ACTION:
-            return { ...state, statusCode: action.payload.statusCode }
+            return { ...state, statusCode: action.payload }
         case MUSIC_DELETE_ACTION:
-            return { ...state, statusCode: action.payload.statusCode }
+            return { ...state, statusCode: action.payload }
         default:
             return state;
     }
 }
-
 

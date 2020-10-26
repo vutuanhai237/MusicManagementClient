@@ -9,8 +9,7 @@ const store = createStore(
     compose(applyMiddleware(thunk),
         window.devToolsExtension ? window.devToolsExtension() : f => f)
 );
-store.subscribe(() => {
-})
+store.subscribe(() => {})
 
 
 export default store;

@@ -5,7 +5,7 @@ import {
     SINGER_ADD_ACTION,
     SINGER_MODIFY_ACTION,
     SINGER_DELETE_ACTION
-} from "../constant/index.js"
+} from "../constant/actionConstant.js"
 
 
 export const setSingersAction = (singers) => {

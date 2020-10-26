@@ -23,6 +23,7 @@
     "react-datetime": "^3.0.4",
     "react-datetime-bootstrap": "^1.4.7",
     "react-dom": "^16.13.1",
+    "react-dropdown-select": "^4.6.0",
     "react-icons": "^3.11.0",
     "react-redux": "^7.2.1",
     "react-router-dom": "^5.2.0",

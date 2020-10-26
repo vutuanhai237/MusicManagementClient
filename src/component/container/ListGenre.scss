@@ -1,19 +1,19 @@
-#listMusic {
+#listGenre {
     margin-left: 40px;
     margin-right: 40px;
     margin-bottom: 20px;
 }
 
-#listMusic .modifyButton {
+#listGenre .modifyButton {
     margin-right: 5px;
 }
 
-#listMusic .deleteButton {
+#listGenre .deleteButton {
     margin-right: 5px;
 }
 
 
-#listMusic #pageTitle {
+#listGenre #pageTitle {
     font-size: 24px;
 }
 
@@ -24,10 +24,10 @@
     margin-right: 30px;
 }
 
-#listMusic #selectP:hover {
+#listGenre #selectP:hover {
     text-decoration: underline;
 }
-#listMusic #datePicker div.react-datepicker-wrapper div.react-datepicker__input-container input  {
+#listGenre #datePicker div.react-datepicker-wrapper div.react-datepicker__input-container input  {
     border: 1px solid #cccccc;
     border-radius: 0.25rem;
 }

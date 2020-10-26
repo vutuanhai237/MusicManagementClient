@@ -1,7 +1,8 @@
 import { combineReducers } from "redux";
-import MusicReducer from './MusicanReducer'
+import { MusicReducer } from './MusicReducer'
 var RootReducer = combineReducers({
-    music: MusicReducer,
+    
+
 });
 
 
