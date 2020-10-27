@@ -1,0 +1,38 @@
+#listSinger {
+    margin-left: 40px;
+    margin-right: 40px;
+    margin-bottom: 20px;
+}
+
+#listSinger .modifyButton {
+    margin-right: 5px;
+}
+
+#listSinger .deleteButton {
+    margin-right: 5px;
+}
+
+
+#listSinger #pageTitle {
+    font-size: 24px;
+}
+
+#verticalLine {
+    border-left: 1px solid rgba(0,0,0,.2);
+    height: 300px;
+    margin-left: 30px;
+    margin-right: 30px;
+}
+
+#listSinger #selectP:hover {
+    text-decoration: underline;
+}
+#listSinger #datePicker div.react-datepicker-wrapper div.react-datepicker__input-container input  {
+    border: 1px solid #cccccc;
+    border-radius: 0.25rem;
+}
+@media (max-width: 767px) {
+    #verticalLine {
+        height: 0px;
+    }
+}

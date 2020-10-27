@@ -3,14 +3,14 @@ import {
     MUSIC_ADD_ACTION,
     MUSIC_MODIFY_ACTION,
     MUSIC_DELETE_ACTION
-} from "../constant/actionConstant"
+} from "../constant/ActionConstant"
 
 export const initialMusicState = {
     musics: [],
     statusCode: 0
 }
 
-export const MusicReducer = (state, action) => {
+export const MusicReducer = (state = initialMusicState, action) => {
     switch (action.type) {
         case MUSIC_SET_MUSICS_ACTION:
             return {...state, musics: action.payload}

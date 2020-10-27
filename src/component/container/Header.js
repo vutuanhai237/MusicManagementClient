@@ -27,7 +27,7 @@ const Header = (props) => {
                         <Nav.Link className="menu-item" href="/genre">
                             {HEADER_GENRE}
                         </Nav.Link>
-                        <Nav.Link className="menu-item" href="/musican">
+                        <Nav.Link className="menu-item" href="/musician">
                             {HEADER_MUSICAN}
                         </Nav.Link>
                         <Nav.Link className="menu-item" href="/singer">

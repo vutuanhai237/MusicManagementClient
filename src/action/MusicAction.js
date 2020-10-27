@@ -4,7 +4,7 @@ import {
     MUSIC_ADD_ACTION,
     MUSIC_MODIFY_ACTION,
     MUSIC_DELETE_ACTION
-} from "../constant/actionConstant.js"
+} from "../constant/ActionConstant.js"
 
 
 export const setMusicsAction = (musics) => {

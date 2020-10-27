@@ -8,14 +8,15 @@ import {
     GENRE_PAGE_MODAL_TITLE_MODIFY_GENRE,
     GENRE_PAGE_MODAL_BUTTON_CLOSE,
     GENRE_PAGE_MODAL_BUTTON_MODIFY,
-    GENRE_PAGE_MODAL_GENRE_NAME
+    GENRE_PAGE_MODAL_GENRE_NAME,
+    GENRE_PAGE_TABLE_GENRE_QUANTITY
 } from "../../constant/GenrePageConstant";
 import { AiOutlineEdit, AiOutlineDelete, AiOutlineFileAdd } from 'react-icons/ai'
 import "react-datepicker/dist/react-datepicker.css";
 import "./ListGenre.scss";
-import { setGenresService, addGenreService, modifyGenreService, deleteGenreService } from '../../service/GenreService'
+import { setGenresService, setGenreQuantitiesService, addGenreService, modifyGenreService, deleteGenreService } from '../../service/GenreService'
 import { GenreReducer, initialGenreState } from '../../reducer/GenreReducer'
-import { setGenresAction, addGenreAction, modifyGenreAction, deleteGenreAction } from '../../action/GenreAction'
+import { setGenresAction, setGenreQuantitiesAction, addGenreAction, modifyGenreAction, deleteGenreAction } from '../../action/GenreAction'
 export const ListGenre = (props) => {
     // reducer
     const [genreState, genreDispatch] = useReducer(GenreReducer, initialGenreState)
@@ -30,11 +31,28 @@ export const ListGenre = (props) => {
     const handleShow = () => setIsShowModal(true)
     // properties
     useEffect(() => {
-        setGenresService().then(result => {
-            genreDispatch(setGenresAction(result.data))
-            setCurrentGenre(result.data[0].name)
-        })
-
+        setGenreQuantitiesService().then(result => {
+            var genreQuantities = []
+            result.data.map(e => {
+                return genreQuantities.push({
+                    genre: e[0],
+                    quantities: e[1]
+                })
+            }) 
+            setGenresService().then(result => {       
+                var genres = result.data
+                for (const i in genres) {
+                    if (typeof genreQuantities[i] == "undefined") {
+                        genreQuantities.push({
+                            genre: genres[i],
+                            quantities: 0
+                        })
+                    }
+                }
+                genreDispatch(setGenresAction(genres))
+                genreDispatch(setGenreQuantitiesAction(genreQuantities))
+            })
+        })   
     }, [])
 
     const getJSONGenre = () => {
@@ -44,9 +62,15 @@ export const ListGenre = (props) => {
         return JSON.stringify(genre);
     }
 
-    const deleteGenre = (id) => {
-        deleteGenreService(id)
-        window.location.reload();
+    const deleteGenre = (quantities, id) => {
+        if (quantities > 0) {
+            alert("Please delete the songs has this genre first!")
+            return
+        } else {
+            deleteGenreService(id)
+            window.location.reload();
+        }
+       
     }
 
     const preProcessAddGenre = () => {
@@ -56,8 +80,12 @@ export const ListGenre = (props) => {
         setCurrentGenre(genreState.genres[0].name)
     }
 
-    const preProcessModifyGenre = () => {
+    const preProcessModifyGenre = (genre) => {
         setModalTitle(GENRE_PAGE_MODAL_TITLE_MODIFY_GENRE)
+        handleShow()
+        console.log(genre)
+        setCurrentID(genre.id)
+        setCurrentName(genre.name)
     }
 
     const addGenre = () => {
@@ -73,14 +101,16 @@ export const ListGenre = (props) => {
         }
     }
 
-    const modifyGenre = (id, Genre) => {
+    const modifyGenre = () => {
+        
         if (currentName !== "") {
             handleClose()
             const JSONGenre = getJSONGenre();
+            
             modifyGenreService(currentID, JSONGenre)
             window.location.reload();
         } else {
-            alert("Please enter song name!")
+            alert("Please enter genre name!")
         }
     }
 
@@ -121,6 +151,7 @@ export const ListGenre = (props) => {
                         <thead>
                             <tr>
                                 <th>{GENRE_PAGE_TABLE_GENRE_NAME}</th>
+                                <th>{GENRE_PAGE_TABLE_GENRE_QUANTITY}</th>
                                 <th><Button variant="success" onClick={preProcessAddGenre}>
                                     <AiOutlineFileAdd />
                                 </Button></th>
@@ -128,14 +159,15 @@ export const ListGenre = (props) => {
                         </thead>
                         <tbody>
                             {
-                                genreState.Genres.map(e => {
-                                    return <tr key={e.id}>
-                                        <td>{e.name}</td>
+                                genreState.genreQuantities.map(e => {
+                                    return <tr key={e.genre.id}>
+                                        <td>{e.genre.name}</td>
+                                        <td>{e.quantities}</td>
                                         <td>
-                                            <Button className="modifyButton" onClick={() => preProcessModifyGenre(e)} variant="warning">
+                                            <Button className="modifyButton" onClick={() => preProcessModifyGenre(e.genre)} variant="warning">
                                                 <AiOutlineEdit />
                                             </Button>
-                                            <Button className="deleteButton" onClick={() => deleteGenre(e.id)} variant="danger">
+                                            <Button className="deleteButton" onClick={() => deleteGenre(e.quantities, e.genre.id)} variant="danger">
                                                 <AiOutlineDelete />
                                             </Button>
                                         </td>

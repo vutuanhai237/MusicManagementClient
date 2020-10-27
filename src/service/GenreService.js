@@ -7,6 +7,11 @@ export const setGenresService = async () => {
     return result
 }
 
+export const setGenreQuantitiesService = async () => {
+    const result = await axios(`http://${HOST}:${PORT}/genre_quantities`)
+    return result
+}
+
 export const deleteGenreService = async (id) => {
     var config = {
         method: 'delete',

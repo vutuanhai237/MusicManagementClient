@@ -1,6 +1,6 @@
 export const HOST = "localhost"
 export const PORT = "8080"
-
+export const SEXS = ["Nam", "Nữ", "Khác"]
 export const HEADER_BRAND = " Music Manager"
 export const HEADER_HOME = "Home"
 export const HEADER_GENRE = "Genre"

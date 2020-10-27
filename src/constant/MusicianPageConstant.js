@@ -1,0 +1,17 @@
+export const MUSICIAN_PAGE_TITLE = "Musician"
+
+// table 
+export const MUSICIAN_PAGE_TABLE_MUSICIAN_NAME = "Name"
+export const MUSICIAN_PAGE_TABLE_MUSICIAN_SEX = "Sex"
+export const MUSICIAN_PAGE_TABLE_MUSICIAN_BIRTHDAY = "Birthday"
+export const MUSICIAN_PAGE_TABLE_MUSICIAN_QUANTITIES = "Number of songs"
+
+export const MUSICIAN_PAGE_MODAL_MUSICIAN_NAME = "Name"
+export const MUSICIAN_PAGE_MODAL_MUSICIAN_SEX = "Sex"
+export const MUSICIAN_PAGE_MODAL_MUSICIAN_BIRTHDAY = "Birthday"
+
+export const MUSICIAN_PAGE_MODAL_TITLE_ADD_MUSICIAN = "Add Musician"
+export const MUSICIAN_PAGE_MODAL_TITLE_MODIFY_MUSICIAN = "Modify Musician"
+export const MUSICIAN_PAGE_MODAL_BUTTON_ADD = "Add"
+export const MUSICIAN_PAGE_MODAL_BUTTON_MODIFY = "Modify"
+export const MUSICIAN_PAGE_MODAL_BUTTON_CLOSE = "Close"
