@@ -29,7 +29,7 @@ export const ListSinger = (props) => {
     // state
     const [isShowModal, setIsShowModal] = useState(false)
     const [modalTitle, setModalTitle] = useState("Add singer")
-    
+
     const [currentSinger, setCurrentSinger] = useState("")
     const [currentID, setCurrentID] = useState(0);
     const [currentBirthday, setCurrentBirthday] = useState(new Date());
@@ -41,28 +41,38 @@ export const ListSinger = (props) => {
     const handleShow = () => setIsShowModal(true)
     // properties
     useEffect(() => {
-        setSingerQuantitiesService().then(result => {
-            var singerQuantities = []
-            result.data.map(e => {
-                return singerQuantities.push({
-                    singer: e[0],
-                    quantities: e[1]
+        const interval = setInterval(() => {
+            setSingerQuantitiesService().then(result => {
+                var singerQuantities = []
+                result.data.map(e => {
+                    return singerQuantities.push({
+                        singer: e[0],
+                        quantities: e[1]
+                    })
+                })
+                setSingersService().then(result => {
+                    var singers = result.data
+                    for (var i = 0; i < singers.length; i++) {
+                        var isInSingerQuantity = false
+                        for (var j = 0; j < singerQuantities.length; j++) {
+                            if (singers[i].id === singerQuantities[j].singer.id) {
+                                isInSingerQuantity = true
+                            }
+                        }
+                        if (isInSingerQuantity === false) {
+                            singerQuantities.push({
+                                singer: singers[i],
+                                quantities: 0
+                            })
+                        }
+                    }
+                    singerDispatch(setSingersAction(singers))
+                    singerDispatch(setSingerQuantitiesAction(singerQuantities))
                 })
             })
-            setSingersService().then(result => {
-                var singers = result.data
-                for (const i in singers) {
-                    if (typeof singerQuantities[i] == "undefined") {
-                        singerQuantities.push({
-                            singer: singers[i],
-                            quantities: 0
-                        })
-                    }
-                }
-                singerDispatch(setSingersAction(singers))
-                singerDispatch(setSingerQuantitiesAction(singerQuantities))
-            })
-        })
+          }, 1000);
+          return () => clearInterval(interval);
+       
     }, [])
 
     const getJSONSinger = () => {
@@ -80,7 +90,6 @@ export const ListSinger = (props) => {
             return
         } else {
             deleteSingerService(id)
-            window.location.reload();
         }
 
     }
@@ -113,7 +122,6 @@ export const ListSinger = (props) => {
             handleClose()
             const JSONsinger = getJSONSinger()
             addSingerService(JSONsinger)
-            window.location.reload()
         } else {
             alert("Please enter singer name!")
         }
@@ -124,9 +132,7 @@ export const ListSinger = (props) => {
         if (currentName !== "") {
             handleClose()
             const JSONSinger = getJSONSinger();
-
             modifySingerService(currentID, JSONSinger)
-            window.location.reload();
         } else {
             alert("Please enter singer name!")
         }

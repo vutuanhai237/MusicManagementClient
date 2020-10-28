@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useReducer } from "react";
 import { Col, Row, Table, Button, Modal, Form } from "react-bootstrap";
-import { 
+import {
     GENRE_PAGE_TITLE,
     GENRE_PAGE_TABLE_GENRE_NAME,
     GENRE_PAGE_MODAL_TITLE_ADD_GENRE,
@@ -31,28 +31,39 @@ export const ListGenre = (props) => {
     const handleShow = () => setIsShowModal(true)
     // properties
     useEffect(() => {
-        setGenreQuantitiesService().then(result => {
-            var genreQuantities = []
-            result.data.map(e => {
-                return genreQuantities.push({
-                    genre: e[0],
-                    quantities: e[1]
+        const interval = setInterval(() => {
+            setGenreQuantitiesService().then(result => {
+                var genreQuantities = []
+                result.data.map(e => {
+                    return genreQuantities.push({
+                        genre: e[0],
+                        quantities: e[1]
+                    })
                 })
-            }) 
-            setGenresService().then(result => {       
-                var genres = result.data
-                for (const i in genres) {
-                    if (typeof genreQuantities[i] == "undefined") {
-                        genreQuantities.push({
-                            genre: genres[i],
-                            quantities: 0
-                        })
+                setGenresService().then(result => {
+                    var genres = result.data
+                    for (var i = 0; i < genres.length; i++) {
+                        var isInGenreQuantity = false
+                        for (var j = 0; j < genreQuantities.length; j++) {
+                            if (genres[i].id === genreQuantities[j].singer.id) {
+                                isInGenreQuantity = true
+                            }
+                        }
+                        if (isInGenreQuantity === false) {
+                            genreQuantities.push({
+                                genre: genres[i],
+                                quantities: 0
+                            })
+                        }
                     }
-                }
-                genreDispatch(setGenresAction(genres))
-                genreDispatch(setGenreQuantitiesAction(genreQuantities))
+                    genreDispatch(setGenresAction(genres))
+                    genreDispatch(setGenreQuantitiesAction(genreQuantities))
+                })
             })
-        })   
+        }, 1000);
+        return () => clearInterval(interval);
+
+
     }, [])
 
     const getJSONGenre = () => {
@@ -70,7 +81,7 @@ export const ListGenre = (props) => {
             deleteGenreService(id)
             window.location.reload();
         }
-       
+
     }
 
     const preProcessAddGenre = () => {
@@ -90,7 +101,7 @@ export const ListGenre = (props) => {
 
     const addGenre = () => {
         // name, releaseTime, genreID, GenreianID, singerID
-        
+
         if (currentName !== "") {
             handleClose()
             const JSONGenre = getJSONGenre()
@@ -102,11 +113,11 @@ export const ListGenre = (props) => {
     }
 
     const modifyGenre = () => {
-        
+
         if (currentName !== "") {
             handleClose()
             const JSONGenre = getJSONGenre();
-            
+
             modifyGenreService(currentID, JSONGenre)
             window.location.reload();
         } else {

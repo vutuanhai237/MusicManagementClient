@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useReducer } from "react";
 import { Col, Row, Table, Button, Modal, Form, Dropdown } from "react-bootstrap";
-import { 
+import {
     HOME_PAGE_TITLE,
     HOME_PAGE_TABLE_MUSIC_NAME,
     HOME_PAGE_TABLE_RELEASE_TIME,
@@ -60,25 +60,26 @@ export const ListMusic = (props) => {
     const handleShow = () => setIsShowModal(true);
     // properties
     useEffect(() => {
-        setMusicsService().then(result => {
-            musicDispatch(setMusicsAction(result.data))
-        })
-        setSingersService().then(result => {
-            singerDispatch(setSingersAction(result.data))
-            setCurrentSinger(result.data[0].name)
-        })
-
-        setGenresService().then(result => {
-            genreDispatch(setGenresAction(result.data))
-            setCurrentGenre(result.data[0].name)
-        })
-
-        setMusiciansService().then(result => {
-            musicianDispatch(setMusiciansAction(result.data))
-            setCurrentMusician(result.data[0].name)
-        })
-
-
+        
+        const interval = setInterval(() => {
+            setMusicsService().then(result => {
+                musicDispatch(setMusicsAction(result.data))
+            })
+            setSingersService().then(result => {
+                singerDispatch(setSingersAction(result.data))
+                
+            })
+    
+            setGenresService().then(result => {
+                genreDispatch(setGenresAction(result.data))
+            })
+    
+            setMusiciansService().then(result => {
+                musicianDispatch(setMusiciansAction(result.data))
+            })
+    
+        }, 1000);
+        return () => clearInterval(interval);
 
     }, [])
 
@@ -94,7 +95,6 @@ export const ListMusic = (props) => {
     }
     const deleteMusic = (id) => {
         deleteMusicService(id)
-        window.location.reload();
     }
 
     const preProcessAddMusic = () => {
@@ -108,7 +108,6 @@ export const ListMusic = (props) => {
     }
 
     const preProcessModifyMusic = (music) => {
-
         setModalTitle(HOME_PAGE_MODAL_TITLE_MODIFY_MUSIC)
         handleShow()
         var date = new Date()
@@ -126,12 +125,11 @@ export const ListMusic = (props) => {
 
     const addMusic = () => {
         // name, releaseTime, genreID, musicianID, singerID
-        
+
         if (currentName !== "") {
             handleClose()
             const JSONMusic = getJSONMusic()
             addMusicService(JSONMusic)
-            window.location.reload()
         } else {
             alert("Please enter song name!")
         }
@@ -142,7 +140,6 @@ export const ListMusic = (props) => {
             handleClose()
             const JSONMusic = getJSONMusic();
             modifyMusicService(currentID, JSONMusic)
-            window.location.reload();
         } else {
             alert("Please enter song name!")
         }

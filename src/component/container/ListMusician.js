@@ -29,7 +29,7 @@ export const ListMusician = (props) => {
     // state
     const [isShowModal, setIsShowModal] = useState(false)
     const [modalTitle, setModalTitle] = useState("Add Musician")
-    
+
     const [currentMusician, setCurrentMusician] = useState("")
     const [currentID, setCurrentID] = useState(0);
     const [currentBirthday, setCurrentBirthday] = useState(new Date());
@@ -41,28 +41,39 @@ export const ListMusician = (props) => {
     const handleShow = () => setIsShowModal(true)
     // properties
     useEffect(() => {
-        setMusicianQuantitiesService().then(result => {
-            var musicianQuantities = []
-            result.data.map(e => {
-                return musicianQuantities.push({
-                    musician: e[0],
-                    quantities: e[1]
+
+        const interval = setInterval(() => {
+            setMusicianQuantitiesService().then(result => {
+                console.log(result.data)
+                var musicianQuantities = []
+                result.data.map(e => {
+                    return musicianQuantities.push({
+                        musician: e[0],
+                        quantities: e[1]
+                    })
+                })
+                setMusiciansService().then(result => {
+                    var musicians = result.data
+                    for (var i = 0; i < musicians.length; i++) {
+                        var isInMusicQuantity = false
+                        for (var j = 0; j < musicianQuantities.length; j++) {
+                            if (musicians[i].id === musicianQuantities[j].musician.id) {
+                                isInMusicQuantity = true
+                            }
+                        }
+                        if (isInMusicQuantity === false) {
+                            musicianQuantities.push({
+                                musician: musicians[i],
+                                quantities: 0
+                            })
+                        }
+                    }
+                    musicianDispatch(setMusiciansAction(musicians))
+                    musicianDispatch(setMusicianQuantitiesAction(musicianQuantities))
                 })
             })
-            setMusiciansService().then(result => {
-                var musicians = result.data
-                for (const i in musicians) {
-                    if (typeof musicianQuantities[i] == "undefined") {
-                        musicianQuantities.push({
-                            musician: musicians[i],
-                            quantities: 0
-                        })
-                    }
-                }
-                musicianDispatch(setMusiciansAction(musicians))
-                musicianDispatch(setMusicianQuantitiesAction(musicianQuantities))
-            })
-        })
+        }, 1000);
+        return () => clearInterval(interval);
     }, [])
 
     const getJSONMusician = () => {
@@ -80,7 +91,6 @@ export const ListMusician = (props) => {
             return
         } else {
             deleteMusicianService(id)
-            window.location.reload();
         }
 
     }
@@ -100,7 +110,6 @@ export const ListMusician = (props) => {
         date.setMonth(parseInt(musician.birthday.substr(5, 2)) - 1)
         date.setFullYear(musician.birthday.substr(0, 4))
         date.setDate(musician.birthday.substr(8, 2))
-        console.log(musician)
         setCurrentID(musician.id)
         setCurrentName(musician.name)
         setCurrentSex(musician.sex)
@@ -113,7 +122,6 @@ export const ListMusician = (props) => {
             handleClose()
             const JSONMusician = getJSONMusician()
             addMusicianService(JSONMusician)
-            window.location.reload()
         } else {
             alert("Please enter musician name!")
         }
@@ -124,9 +132,7 @@ export const ListMusician = (props) => {
         if (currentName !== "") {
             handleClose()
             const JSONMusician = getJSONMusician();
-
             modifyMusicianService(currentID, JSONMusician)
-            window.location.reload();
         } else {
             alert("Please enter musician name!")
         }
