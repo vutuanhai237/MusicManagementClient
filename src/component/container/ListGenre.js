@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useReducer } from "react";
-import { Col, Row, Table, Button, Modal, Form } from "react-bootstrap";
+import { Col, Row, Table, Button, Modal, Form, Pagination } from "react-bootstrap";
 import {
     GENRE_PAGE_TITLE,
     GENRE_PAGE_TABLE_GENRE_NAME,
@@ -11,6 +11,14 @@ import {
     GENRE_PAGE_MODAL_GENRE_NAME,
     GENRE_PAGE_TABLE_GENRE_QUANTITY
 } from "../../constant/GenrePageConstant";
+import { getObjectByPagination } from "../../utils/Helper"
+import {
+    ITEM_PER_PAGE,
+    MODAL_CONFIRM_TITLE,
+    MODAL_CONFIRM_BODY,
+    MODAL_BUTTON_NO,
+    MODAL_BUTTON_YES
+} from "../../constant/index"
 import { AiOutlineEdit, AiOutlineDelete, AiOutlineFileAdd } from 'react-icons/ai'
 import "react-datepicker/dist/react-datepicker.css";
 import "./ListGenre.scss";
@@ -22,14 +30,23 @@ export const ListGenre = (props) => {
     const [genreState, genreDispatch] = useReducer(GenreReducer, initialGenreState)
     // state
     const [isShowModal, setIsShowModal] = useState(false)
-    const [modalTitle, setModalTitle] = useState("Add Genre")
+    const [isShowModalConfirm, setIsShowModalConfirm] = useState(false);
+    const [modalTitle, setModalTitle] = useState(GENRE_PAGE_MODAL_TITLE_ADD_GENRE)
     const [currentName, setCurrentName] = useState("")
     const [currentGenre, setCurrentGenre] = useState("")
+    const [currentQuantity, setCurrentQuantity] = useState(0)
     const [currentID, setCurrentID] = useState(0)
+    const [pagination, setPagination] = useState([])
+    const [currentPagination, setCurrentPagination] = useState(1)
     // ref
     const handleClose = () => setIsShowModal(false)
     const handleShow = () => setIsShowModal(true)
+    const handleCloseModalConfirm = () =>  setIsShowModalConfirm(false);
+    const handleShowModalConfirm = () => setIsShowModalConfirm(true);
     // properties
+    useEffect(() => {
+
+    }, [])
     useEffect(() => {
         const interval = setInterval(() => {
             setGenreQuantitiesService().then(result => {
@@ -45,7 +62,7 @@ export const ListGenre = (props) => {
                     for (var i = 0; i < genres.length; i++) {
                         var isInGenreQuantity = false
                         for (var j = 0; j < genreQuantities.length; j++) {
-                            if (genres[i].id === genreQuantities[j].singer.id) {
+                            if (genres[i].id === genreQuantities[j].genre.id) {
                                 isInGenreQuantity = true
                             }
                         }
@@ -56,6 +73,16 @@ export const ListGenre = (props) => {
                             })
                         }
                     }
+                    // pagin
+                    var pagination = []
+                    for (let number = 1; number <= genreQuantities.length/ITEM_PER_PAGE + 1; number++) {
+                        pagination.push(
+                            <Pagination.Item onClick={() => setCurrentPagination(number)} key={number}>
+                                {number}
+                            </Pagination.Item>,
+                        );
+                    }
+                    setPagination(pagination)
                     genreDispatch(setGenresAction(genres))
                     genreDispatch(setGenreQuantitiesAction(genreQuantities))
                 })
@@ -66,6 +93,7 @@ export const ListGenre = (props) => {
 
     }, [])
 
+  
     const getJSONGenre = () => {
         const genre = {
             "name": currentName,
@@ -73,60 +101,78 @@ export const ListGenre = (props) => {
         return JSON.stringify(genre);
     }
 
-    const deleteGenre = (quantities, id) => {
-        if (quantities > 0) {
+   
+
+    const preProcessDeleteGenre = (quantity, id) => {
+        handleShowModalConfirm()
+        setCurrentID(id)
+        setCurrentQuantity(quantity)
+    }
+
+    const deleteGenre = () => {
+        handleCloseModalConfirm()
+        if (currentQuantity > 0) {
             alert("Please delete the songs has this genre first!")
             return
         } else {
-            deleteGenreService(id)
-            window.location.reload();
+            deleteGenreService(currentID)   
         }
-
     }
 
     const preProcessAddGenre = () => {
         setModalTitle(GENRE_PAGE_MODAL_TITLE_ADD_GENRE)
         handleShow()
         setCurrentName("")
-        setCurrentGenre(genreState.genres[0].name)
     }
 
     const preProcessModifyGenre = (genre) => {
         setModalTitle(GENRE_PAGE_MODAL_TITLE_MODIFY_GENRE)
         handleShow()
-        console.log(genre)
         setCurrentID(genre.id)
         setCurrentName(genre.name)
     }
 
     const addGenre = () => {
         // name, releaseTime, genreID, GenreianID, singerID
-
         if (currentName !== "") {
             handleClose()
             const JSONGenre = getJSONGenre()
             addGenreService(JSONGenre)
-            window.location.reload()
         } else {
             alert("Please enter song name!")
         }
     }
 
     const modifyGenre = () => {
-
         if (currentName !== "") {
             handleClose()
             const JSONGenre = getJSONGenre();
-
             modifyGenreService(currentID, JSONGenre)
-            window.location.reload();
         } else {
             alert("Please enter genre name!")
         }
     }
 
     return (
+        
         <div id="listGenre">
+             <Modal centered show={isShowModalConfirm} onHide={handleCloseModalConfirm} backdrop="static" keyboard={false}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{MODAL_CONFIRM_TITLE}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {MODAL_CONFIRM_BODY}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="danger" onClick={handleCloseModalConfirm}>
+                        {MODAL_BUTTON_NO}
+                    </Button>
+                    <Button variant="success" onClick={deleteGenre}>
+                        {MODAL_BUTTON_YES}
+                    </Button>
+
+                </Modal.Footer>
+            </Modal>
             <Modal show={isShowModal} onHide={handleClose} backdrop="static" keyboard={false}>
                 <Modal.Header closeButton>
                     <Modal.Title>{modalTitle}</Modal.Title>
@@ -170,7 +216,7 @@ export const ListGenre = (props) => {
                         </thead>
                         <tbody>
                             {
-                                genreState.genreQuantities.map(e => {
+                                getObjectByPagination(genreState.genreQuantities, currentPagination).map(e => {
                                     return <tr key={e.genre.id}>
                                         <td>{e.genre.name}</td>
                                         <td>{e.quantities}</td>
@@ -178,7 +224,7 @@ export const ListGenre = (props) => {
                                             <Button className="modifyButton" onClick={() => preProcessModifyGenre(e.genre)} variant="warning">
                                                 <AiOutlineEdit />
                                             </Button>
-                                            <Button className="deleteButton" onClick={() => deleteGenre(e.quantities, e.genre.id)} variant="danger">
+                                            <Button className="deleteButton" onClick={() => preProcessDeleteGenre(e.quantities, e.genre.id)} variant="danger">
                                                 <AiOutlineDelete />
                                             </Button>
                                         </td>
@@ -188,6 +234,7 @@ export const ListGenre = (props) => {
                         </tbody>
 
                     </Table>
+                    <Pagination>{pagination}</Pagination>
                 </Row>
             </Col>
         </div>

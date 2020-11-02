@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useReducer } from "react";
-import { Col, Row, Table, Button, Modal, Form } from "react-bootstrap";
+import { Col, Row, Table, Button, Modal, Form, Pagination } from "react-bootstrap";
 import {
     MUSICIAN_PAGE_TITLE,
     MUSICIAN_PAGE_TABLE_MUSICIAN_NAME,
@@ -15,6 +15,14 @@ import {
     MUSICIAN_PAGE_MODAL_BUTTON_MODIFY,
     MUSICIAN_PAGE_MODAL_BUTTON_CLOSE
 } from "../../constant/MusicianPageConstant";
+import {
+    ITEM_PER_PAGE,
+    MODAL_CONFIRM_TITLE,
+    MODAL_CONFIRM_BODY,
+    MODAL_BUTTON_NO,
+    MODAL_BUTTON_YES
+} from "../../constant/index"
+import { getObjectByPagination } from "../../utils/Helper"
 import { SEXS } from "../../constant/index"
 import { AiOutlineEdit, AiOutlineDelete, AiOutlineFileAdd } from 'react-icons/ai'
 import "react-datepicker/dist/react-datepicker.css";
@@ -28,23 +36,26 @@ export const ListMusician = (props) => {
     const [musicianState, musicianDispatch] = useReducer(MusicianReducer, initialMusicianState)
     // state
     const [isShowModal, setIsShowModal] = useState(false)
+    const [isShowModalConfirm, setIsShowModalConfirm] = useState(false);
     const [modalTitle, setModalTitle] = useState("Add Musician")
-
     const [currentMusician, setCurrentMusician] = useState("")
+    const [currentQuantity, setCurrentQuantity] = useState(0)
     const [currentID, setCurrentID] = useState(0);
     const [currentBirthday, setCurrentBirthday] = useState(new Date());
     const [currentName, setCurrentName] = useState("");
     const [currentSex, setCurrentSex] = useState("");
+    const [pagination, setPagination] = useState([])
+    const [currentPagination, setCurrentPagination] = useState(1)
     // ref
     const datepickerRef = useRef(null);
     const handleClose = () => setIsShowModal(false)
     const handleShow = () => setIsShowModal(true)
+    const handleCloseModalConfirm = () =>  setIsShowModalConfirm(false);
+    const handleShowModalConfirm = () => setIsShowModalConfirm(true);
     // properties
     useEffect(() => {
-
         const interval = setInterval(() => {
             setMusicianQuantitiesService().then(result => {
-                console.log(result.data)
                 var musicianQuantities = []
                 result.data.map(e => {
                     return musicianQuantities.push({
@@ -68,6 +79,15 @@ export const ListMusician = (props) => {
                             })
                         }
                     }
+                    var pagination = []
+                    for (let number = 1; number <= result.data.length / ITEM_PER_PAGE + 1; number++) {
+                        pagination.push(
+                            <Pagination.Item onClick={() => setCurrentPagination(number)} key={number}>
+                                {number}
+                            </Pagination.Item>,
+                        );
+                    }
+                    setPagination(pagination)
                     musicianDispatch(setMusiciansAction(musicians))
                     musicianDispatch(setMusicianQuantitiesAction(musicianQuantities))
                 })
@@ -85,12 +105,20 @@ export const ListMusician = (props) => {
         return JSON.stringify(Musician);
     }
 
-    const deleteMusician = (quantities, id) => {
-        if (quantities > 0) {
+    const preProcessDeleteMusician = (quantity, id) => {
+        handleShowModalConfirm()
+        setCurrentID(id)
+        setCurrentQuantity(quantity)
+    }
+
+
+    const deleteMusician = () => {
+        handleCloseModalConfirm()
+        if (currentQuantity > 0) {
             alert("Please delete the songs has this musician first!")
             return
         } else {
-            deleteMusicianService(id)
+            deleteMusicianService(currentID)
         }
 
     }
@@ -140,6 +168,24 @@ export const ListMusician = (props) => {
 
     return (
         <div id="listMusician">
+            <Modal centered show={isShowModalConfirm} onHide={handleCloseModalConfirm} backdrop="static" keyboard={false}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{MODAL_CONFIRM_TITLE}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {MODAL_CONFIRM_BODY}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="danger" onClick={handleCloseModalConfirm}>
+                        {MODAL_BUTTON_NO}
+                    </Button>
+                    <Button variant="success" onClick={deleteMusician}>
+                        {MODAL_BUTTON_YES}
+                    </Button>
+
+                </Modal.Footer>
+            </Modal>
+
             <Modal show={isShowModal} onHide={handleClose} backdrop="static" keyboard={false}>
                 <Modal.Header closeButton>
                     <Modal.Title>{modalTitle}</Modal.Title>
@@ -200,7 +246,7 @@ export const ListMusician = (props) => {
                         </thead>
                         <tbody>
                             {
-                                musicianState.musicianQuantities.map(e => {
+                                getObjectByPagination(musicianState.musicianQuantities, currentPagination).map(e => {
                                     return <tr key={e.musician.id}>
                                         <td>{e.musician.name}</td>
                                         <td>{e.musician.sex}</td>
@@ -210,7 +256,7 @@ export const ListMusician = (props) => {
                                             <Button className="modifyButton" onClick={() => preProcessModifyMusician(e.musician)} variant="warning">
                                                 <AiOutlineEdit />
                                             </Button>
-                                            <Button className="deleteButton" onClick={() => deleteMusician(e.quantities, e.musician.id)} variant="danger">
+                                            <Button className="deleteButton" onClick={() => preProcessDeleteMusician(e.quantities, e.musician.id)} variant="danger">
                                                 <AiOutlineDelete />
                                             </Button>
                                         </td>
@@ -218,6 +264,8 @@ export const ListMusician = (props) => {
                                 })
                             }
                         </tbody>
+                        <Pagination>{pagination}</Pagination>
+
                     </Table>
                 </Row>
             </Col>

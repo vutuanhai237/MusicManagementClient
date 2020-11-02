@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useReducer } from "react";
-import { Col, Row, Table, Button, Modal, Form } from "react-bootstrap";
+import { Col, Row, Table, Button, Modal, Form, Pagination } from "react-bootstrap";
 import {
     SINGER_PAGE_TITLE,
     SINGER_PAGE_TABLE_SINGER_NAME,
@@ -15,6 +15,15 @@ import {
     SINGER_PAGE_MODAL_BUTTON_MODIFY,
     SINGER_PAGE_MODAL_BUTTON_CLOSE
 } from "../../constant/SingerPageConstant";
+import {
+    ITEM_PER_PAGE,
+    MODAL_CONFIRM_TITLE,
+    MODAL_CONFIRM_BODY,
+    MODAL_BUTTON_NO,
+    MODAL_BUTTON_YES
+} from "../../constant/index"
+
+import { getObjectByPagination } from "../../utils/Helper"
 import { SEXS } from "../../constant/index"
 import { AiOutlineEdit, AiOutlineDelete, AiOutlineFileAdd } from 'react-icons/ai'
 import "react-datepicker/dist/react-datepicker.css";
@@ -28,17 +37,22 @@ export const ListSinger = (props) => {
     const [singerState, singerDispatch] = useReducer(SingerReducer, initialSingerState)
     // state
     const [isShowModal, setIsShowModal] = useState(false)
+    const [isShowModalConfirm, setIsShowModalConfirm] = useState(false);
     const [modalTitle, setModalTitle] = useState("Add singer")
-
     const [currentSinger, setCurrentSinger] = useState("")
+    const [currentQuantity, setCurrentQuantity] = useState(0)
     const [currentID, setCurrentID] = useState(0);
     const [currentBirthday, setCurrentBirthday] = useState(new Date());
     const [currentName, setCurrentName] = useState("");
     const [currentSex, setCurrentSex] = useState("");
+    const [pagination, setPagination] = useState([])
+    const [currentPagination, setCurrentPagination] = useState(1)
     // ref
     const datepickerRef = useRef(null);
     const handleClose = () => setIsShowModal(false)
     const handleShow = () => setIsShowModal(true)
+    const handleCloseModalConfirm = () =>  setIsShowModalConfirm(false);
+    const handleShowModalConfirm = () => setIsShowModalConfirm(true);
     // properties
     useEffect(() => {
         const interval = setInterval(() => {
@@ -66,6 +80,15 @@ export const ListSinger = (props) => {
                             })
                         }
                     }
+                    var pagination = []
+                    for (let number = 1; number <= result.data.length / ITEM_PER_PAGE + 1; number++) {
+                        pagination.push(
+                            <Pagination.Item onClick={() => setCurrentPagination(number)} key={number}>
+                                {number}
+                            </Pagination.Item>,
+                        );
+                    }
+                    setPagination(pagination)
                     singerDispatch(setSingersAction(singers))
                     singerDispatch(setSingerQuantitiesAction(singerQuantities))
                 })
@@ -84,12 +107,19 @@ export const ListSinger = (props) => {
         return JSON.stringify(singer);
     }
 
-    const deleteSinger = (quantities, id) => {
-        if (quantities > 0) {
+    const preProcessDeleteSinger = (quantity, id) => {
+        handleShowModalConfirm()
+        setCurrentID(id)
+        setCurrentQuantity(quantity)
+    }
+
+    const deleteSinger = () => {
+        handleCloseModalConfirm()
+        if (currentQuantity > 0) {
             alert("Please delete the songs has this singer first!")
             return
         } else {
-            deleteSingerService(id)
+            deleteSingerService(currentID)
         }
 
     }
@@ -140,6 +170,24 @@ export const ListSinger = (props) => {
 
     return (
         <div id="listSinger">
+             <Modal centered show={isShowModalConfirm} onHide={handleCloseModalConfirm} backdrop="static" keyboard={false}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{MODAL_CONFIRM_TITLE}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {MODAL_CONFIRM_BODY}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="danger" onClick={handleCloseModalConfirm}>
+                        {MODAL_BUTTON_NO}
+                    </Button>
+                    <Button variant="success" onClick={deleteSinger}>
+                        {MODAL_BUTTON_YES}
+                    </Button>
+
+                </Modal.Footer>
+            </Modal>
+
             <Modal show={isShowModal} onHide={handleClose} backdrop="static" keyboard={false}>
                 <Modal.Header closeButton>
                     <Modal.Title>{modalTitle}</Modal.Title>
@@ -200,7 +248,7 @@ export const ListSinger = (props) => {
                         </thead>
                         <tbody>
                             {
-                                singerState.singerQuantities.map(e => {
+                                getObjectByPagination(singerState.singerQuantities, currentPagination).map(e => {
                                     return <tr key={e.singer.id}>
                                         <td>{e.singer.name}</td>
                                         <td>{e.singer.sex}</td>
@@ -210,7 +258,7 @@ export const ListSinger = (props) => {
                                             <Button className="modifyButton" onClick={() => preProcessModifySinger(e.singer)} variant="warning">
                                                 <AiOutlineEdit />
                                             </Button>
-                                            <Button className="deleteButton" onClick={() => deleteSinger(e.quantities, e.singer.id)} variant="danger">
+                                            <Button className="deleteButton" onClick={() => preProcessDeleteSinger(e.quantities, e.singer.id)} variant="danger">
                                                 <AiOutlineDelete />
                                             </Button>
                                         </td>
@@ -218,6 +266,8 @@ export const ListSinger = (props) => {
                                 })
                             }
                         </tbody>
+                        <Pagination>{pagination}</Pagination>
+
                     </Table>
                 </Row>
             </Col>

@@ -13,5 +13,9 @@ export const FOOTER_YOUTUBE = "https://www.youtube.com/channel/UCeT_vjcZwjXEzTOF
 export const FOOTER_LINKEDIN = "https://www.linkedin.com/in/vutuanhai237/"
 export const FOOTER_FACEBOOK = "https://www.facebook.com/vutuanhai237"
 
-
+export const ITEM_PER_PAGE = 10
+export const MODAL_CONFIRM_TITLE = "Confirm"
+export const MODAL_CONFIRM_BODY = "Are you sure?"
+export const MODAL_BUTTON_NO = "No"
+export const MODAL_BUTTON_YES = "Yes"
 

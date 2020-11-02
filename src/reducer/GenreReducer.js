@@ -17,7 +17,6 @@ export const GenreReducer = (state = initialGenreState, action) => {
         case GENRE_SET_GENRES_ACTION:
             return {...state, genres: action.payload}
         case GENRE_SET_GENREQUANTITIES_ACTION:
-            console.log(action.payload)
             return {...state, genreQuantities: action.payload}
         case GENRE_ADD_ACTION:
             return { ...state, statusCode: action.payload.statusCode }

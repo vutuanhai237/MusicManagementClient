@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useReducer } from "react";
-import { Col, Row, Table, Button, Modal, Form, Dropdown } from "react-bootstrap";
+import { Col, Row, Table, Button, Modal, Form, Dropdown, Pagination } from "react-bootstrap";
 import {
     HOME_PAGE_TITLE,
     HOME_PAGE_TABLE_MUSIC_NAME,
@@ -18,7 +18,16 @@ import {
     HOME_PAGE_MODAL_BUTTON_MODIFY,
     HOME_PAGE_MODAL_BUTTON_CLOSE,
 } from "../../constant/HomePageConstant";
+
+import { getObjectByPagination } from "../../utils/Helper"
 import { AiOutlineEdit, AiOutlineDelete, AiOutlineFileAdd } from 'react-icons/ai'
+import {
+    ITEM_PER_PAGE,
+    MODAL_CONFIRM_TITLE,
+    MODAL_CONFIRM_BODY,
+    MODAL_BUTTON_NO,
+    MODAL_BUTTON_YES
+} from "../../constant/index"
 import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./ListMusic.scss";
@@ -47,6 +56,7 @@ export const ListMusic = (props) => {
     const [musicianState, musicianDispatch] = useReducer(MusicianReducer, initialMusicianState);
     // state
     const [isShowModal, setIsShowModal] = useState(false);
+    const [isShowModalConfirm, setIsShowModalConfirm] = useState(false);
     const [modalTitle, setModalTitle] = useState("Add music");
     const [currentID, setCurrentID] = useState(0);
     const [releaseTime, setReleaseTime] = useState(new Date());
@@ -54,30 +64,44 @@ export const ListMusic = (props) => {
     const [currentGenre, setCurrentGenre] = useState("");
     const [currentSinger, setCurrentSinger] = useState("");
     const [currentMusician, setCurrentMusician] = useState("");
+    const [pagination, setPagination] = useState([])
+    const [currentPagination, setCurrentPagination] = useState(1)
+
     // ref
     const datepickerRef = useRef(null);
     const handleClose = () => setIsShowModal(false);
     const handleShow = () => setIsShowModal(true);
+    const handleCloseModalConfirm = () => setIsShowModalConfirm(false);
+    const handleShowModalConfirm = () => setIsShowModalConfirm(true);
     // properties
     useEffect(() => {
-        
+
         const interval = setInterval(() => {
             setMusicsService().then(result => {
                 musicDispatch(setMusicsAction(result.data))
+                var pagination = []
+                for (let number = 1; number <= result.data.length / ITEM_PER_PAGE + 1; number++) {
+                    pagination.push(
+                        <Pagination.Item onClick={() => setCurrentPagination(number)} key={number}>
+                            {number}
+                        </Pagination.Item>,
+                    );
+                }
+                setPagination(pagination)
             })
             setSingersService().then(result => {
                 singerDispatch(setSingersAction(result.data))
-                
+
             })
-    
+
             setGenresService().then(result => {
                 genreDispatch(setGenresAction(result.data))
             })
-    
+
             setMusiciansService().then(result => {
                 musicianDispatch(setMusiciansAction(result.data))
             })
-    
+
         }, 1000);
         return () => clearInterval(interval);
 
@@ -93,10 +117,15 @@ export const ListMusic = (props) => {
         }
         return JSON.stringify(music);
     }
-    const deleteMusic = (id) => {
-        deleteMusicService(id)
+    const deleteMusic = () => {
+        handleCloseModalConfirm()
+        deleteMusicService(currentID)
     }
 
+    const preProcessDeleteMusic = (id) => {
+        handleShowModalConfirm()
+        setCurrentID(id)
+    }
     const preProcessAddMusic = () => {
         setModalTitle(HOME_PAGE_MODAL_TITLE_ADD_MUSIC)
         handleShow()
@@ -123,6 +152,7 @@ export const ListMusic = (props) => {
 
     }
 
+
     const addMusic = () => {
         // name, releaseTime, genreID, musicianID, singerID
 
@@ -145,8 +175,27 @@ export const ListMusic = (props) => {
         }
     }
 
+   
     return (
         <div id="listMusic">
+            <Modal centered show={isShowModalConfirm} onHide={handleCloseModalConfirm} backdrop="static" keyboard={false}>
+                <Modal.Header closeButton>
+                    <Modal.Title>{MODAL_CONFIRM_TITLE}</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {MODAL_CONFIRM_BODY}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="danger" onClick={handleCloseModalConfirm}>
+                        {MODAL_BUTTON_NO}
+                    </Button>
+                    <Button variant="success" onClick={deleteMusic}>
+                        {MODAL_BUTTON_YES}
+                    </Button>
+
+                </Modal.Footer>
+            </Modal>
+
             <Modal show={isShowModal} onHide={handleClose} backdrop="static" keyboard={false}>
                 <Modal.Header closeButton>
                     <Modal.Title>{modalTitle}</Modal.Title>
@@ -205,7 +254,6 @@ export const ListMusic = (props) => {
                     </Form.Group>
 
                 </Modal.Body>
-
                 <Modal.Footer>
                     <Button variant="danger" onClick={handleClose}>
                         {HOME_PAGE_MODAL_BUTTON_CLOSE}
@@ -213,11 +261,8 @@ export const ListMusic = (props) => {
                     <Button variant="success" onClick={modalTitle === HOME_PAGE_MODAL_TITLE_ADD_MUSIC ? addMusic : modifyMusic}>
                         {modalTitle === HOME_PAGE_MODAL_TITLE_ADD_MUSIC ? HOME_PAGE_MODAL_BUTTON_ADD : HOME_PAGE_MODAL_BUTTON_MODIFY}
                     </Button>
-
                 </Modal.Footer>
             </Modal>
-
-
 
             <Col>
                 <Row>
@@ -239,7 +284,7 @@ export const ListMusic = (props) => {
                         </thead>
                         <tbody>
                             {
-                                musicState.musics.map(e => {
+                                getObjectByPagination(musicState.musics, currentPagination).map(e => {
                                     return <tr key={e.id}>
                                         <td>{e.name}</td>
                                         <td>{e.releaseTime}</td>
@@ -250,7 +295,7 @@ export const ListMusic = (props) => {
                                             <Button className="modifyButton" onClick={() => preProcessModifyMusic(e)} variant="warning">
                                                 <AiOutlineEdit />
                                             </Button>
-                                            <Button className="deleteButton" onClick={() => deleteMusic(e.id)} variant="danger">
+                                            <Button className="deleteButton" onClick={() => preProcessDeleteMusic(e.id)} variant="danger">
                                                 <AiOutlineDelete />
                                             </Button>
                                         </td>
@@ -258,7 +303,7 @@ export const ListMusic = (props) => {
                                 })
                             }
                         </tbody>
-
+                        <Pagination>{pagination}</Pagination>
                     </Table>
                 </Row>
             </Col>
