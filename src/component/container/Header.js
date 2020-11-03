@@ -6,7 +6,14 @@ import { withRouter } from "react-router-dom";
 import { bindActionCreators } from 'redux';
 import leoIcon from '../../img/leoIcon.ico'
 import './Header.scss'
-import { HEADER_BRAND, HEADER_HOME, HEADER_GENRE, HEADER_MUSICAN, HEADER_SINGER } from '../../constant/index'
+import { 
+    HEADER_BRAND, 
+    HEADER_HOME, 
+    HEADER_GENRE, 
+    HEADER_MUSICAN, 
+    HEADER_SINGER, 
+    HEADER_PLAYLIST 
+} from '../../constant/index'
 const Header = (props) => {
 
     return (
@@ -23,6 +30,9 @@ const Header = (props) => {
                         {/* Menu */}
                         <Nav.Link className="menu-item" href="/">
                             {HEADER_HOME}
+                        </Nav.Link>
+                        <Nav.Link className="menu-item" href="/playlist">
+                            {HEADER_PLAYLIST}
                         </Nav.Link>
                         <Nav.Link className="menu-item" href="/genre">
                             {HEADER_GENRE}

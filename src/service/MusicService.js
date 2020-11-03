@@ -8,6 +8,19 @@ export const setMusicsService = async () => {
     return result
 }
 
+export const getMusicsBySingerService = async(singer) => {
+    var config = {
+        method: 'post',
+        url: `http://${HOST}:${PORT}/musics_singer`,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        data: singer
+    };
+
+    const result = await axios( `http://${HOST}:${PORT}/musics_singer`, config)
+    return result
+}
 export const addMusicService = (music) => {
     var config = {
         method: 'post',

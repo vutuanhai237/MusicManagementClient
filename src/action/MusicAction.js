@@ -14,6 +14,14 @@ export const setMusicsAction = (musics) => {
     }
 }
 
+
+export const getMusicsBySingerAction = (musics) => {
+    return {
+        type: MUSIC_SET_MUSICS_ACTION,
+        payload: musics
+    }
+}
+
 export const setCurrentMusicAction = (music) => {
     return {
         type: MUSIC_SET_CURRENTMUSIC_ACTION,

@@ -1,31 +1,36 @@
 import React, { useEffect, useState, useRef, useReducer } from "react";
 import { Col, Row, Table, Button, Modal, Form, Dropdown, Pagination } from "react-bootstrap";
 import {
-    HOME_PAGE_TITLE,
-    HOME_PAGE_TABLE_MUSIC_NAME,
-    HOME_PAGE_TABLE_RELEASE_TIME,
-    HOME_PAGE_TABLE_GENRE,
-    HOME_PAGE_TABLE_MUSICIAN,
-    HOME_PAGE_TABLE_SINGER,
+    HOME_PAGE_MODAL_TITLE_ADD_MUSIC,
+    HOME_PAGE_MODAL_TITLE_MODIFY_MUSIC
+} from "../../constant/HomePageConstant";
+import {
     HOME_PAGE_MODAL_MUSIC_NAME,
     HOME_PAGE_MODAL_RELEASE_TIME,
     HOME_PAGE_MODAL_GENRE,
     HOME_PAGE_MODAL_MUSICIAN,
     HOME_PAGE_MODAL_SINGER,
-    HOME_PAGE_MODAL_TITLE_ADD_MUSIC,
-    HOME_PAGE_MODAL_TITLE_MODIFY_MUSIC,
     HOME_PAGE_MODAL_BUTTON_ADD,
     HOME_PAGE_MODAL_BUTTON_MODIFY,
     HOME_PAGE_MODAL_BUTTON_CLOSE,
 } from "../../constant/HomePageConstant";
+import {
+    PLAYLIST_PAGE_SORTNAME_AZ,
+    PLAYLIST_PAGE_SORTNAME_ZA,
+    PLAYLIST_PAGE_SORTSINGER_AZ,
+    PLAYLIST_PAGE_SORTSINGER_ZA,
+    PLAYLIST_PAGE_SORTGENRE_AZ,
+    PLAYLIST_PAGE_SORTGENRE_ZA,
+    PLAYLIST_PAGE_SORTMUSICIAN_AZ,
+    PLAYLIST_PAGE_SORTMUSICIAN_ZA,
+    PLAYLIST_PAGE_SORTRELEASETIME_AZ,
+    PLAYLIST_PAGE_SORTRELEASETIME_ZA
+} from "../../constant/PlaylistPageConstant";
 
-import { 
-    getObjectByPagination, 
-    isInArray, 
-    getDateFromString 
-} from "../../utils/Helper"
-import { IconContext } from "react-icons";
 import { AiOutlineEdit, AiOutlineDelete, AiOutlineFileAdd, AiFillHeart, AiOutlineHeart } from 'react-icons/ai'
+import { PLAYLIST_PAGE_TITLE } from '../../constant/PlaylistPageConstant'
+import { getObjectByPagination, isInArray } from "../../utils/Helper"
+import { IconContext } from "react-icons";
 import {
     ITEM_PER_PAGE,
     MODAL_CONFIRM_TITLE,
@@ -33,19 +38,18 @@ import {
     MODAL_BUTTON_NO,
     MODAL_BUTTON_YES
 } from "../../constant/index"
-import ReactDatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import "./ListMusic.scss";
+import ReactDatePicker from "react-datepicker";
 import { CustomToggle, CustomMenu } from '../MusicManagement/DropDown'
+import { addPlaylistService, getPlaylistByUIDService, deletePlaylistService } from '../../service/PlaylistService'
 
-import { setMusicsService, deleteMusicService, modifyMusicService, addMusicService } from '../../service/MusicService'
+import { getMusicsBySingerService, deleteMusicService, modifyMusicService, addMusicService } from '../../service/MusicService'
 import { MusicReducer, initialMusicState } from '../../reducer/MusicReducer'
 import { setMusicsAction } from '../../action/MusicAction'
 
-import { getPlaylistByUIDService, deletePlaylistService, addPlaylistService } from '../../service/PlaylistService'
-import { getPlaylistByUIDAction } from '../../action/PlaylistAction'
 
-import { setSingersService } from '../../service/SingerService'
+import { setSingersService, getSingerByIdService } from '../../service/SingerService'
 import { SingerReducer, initialSingerState } from '../../reducer/SingerReducer'
 import { setSingersAction } from '../../action/SingerAction'
 
@@ -57,8 +61,8 @@ import { setMusiciansService } from '../../service/MusicianService'
 import { MusicianReducer, initialMusicianState } from '../../reducer/MusicianReducer'
 import { setMusiciansAction } from '../../action/MusicianAction'
 
-export const ListMusic = (props) => {
-    const uid = 1
+
+export const SingerDetail = (props) => {
     // reducer
     const [singerState, singerDispatch] = useReducer(SingerReducer, initialSingerState);
     const [genreState, genreDispatch] = useReducer(GenreReducer, initialGenreState);
@@ -69,75 +73,162 @@ export const ListMusic = (props) => {
     const [isShowModalConfirm, setIsShowModalConfirm] = useState(false);
     const [modalTitle, setModalTitle] = useState("Add music");
     const [currentID, setCurrentID] = useState(0);
+    const [currentMID, setCurrentMID] = useState(0);
     const [releaseTime, setReleaseTime] = useState(new Date());
     const [currentName, setCurrentName] = useState("");
     const [currentGenre, setCurrentGenre] = useState("");
     const [currentSinger, setCurrentSinger] = useState("");
+    const [currentFetchedSinger, setCurrentFetchedSinger] = useState({});
     const [currentMusician, setCurrentMusician] = useState("");
     const [pagination, setPagination] = useState([])
     const [currentPagination, setCurrentPagination] = useState(1)
 
-    // ref
+    const [currentSortName, setCurrentSortName] = useState(PLAYLIST_PAGE_SORTNAME_AZ)
+    const [currentSortReleaseTime, setCurrentSortReleaseTime] = useState(PLAYLIST_PAGE_SORTRELEASETIME_AZ)
+    const [currentSortGenre, setCurrentSortGenre] = useState(PLAYLIST_PAGE_SORTGENRE_AZ)
+    const [currentSortSinger, setCurrentSortSinger] = useState(PLAYLIST_PAGE_SORTSINGER_AZ)
+    const [currentSortMusician, setCurrentSortMusician] = useState(PLAYLIST_PAGE_SORTMUSICIAN_AZ)
+    const [currentFilter, setCurrentFilter] = useState(PLAYLIST_PAGE_SORTNAME_AZ)
     const datepickerRef = useRef(null);
     const handleClose = () => setIsShowModal(false);
     const handleShow = () => setIsShowModal(true);
     const handleCloseModalConfirm = () => setIsShowModalConfirm(false);
     const handleShowModalConfirm = () => setIsShowModalConfirm(true);
-    // properties
+    const uid = 1
     useEffect(() => {
 
+    }, [])
+    useEffect(() => {
+        setSingersService().then(singers => {
+            singerDispatch(setSingersAction(singers.data))
+
+        })
+
+        setGenresService().then(genres => {
+            genreDispatch(setGenresAction(genres.data))
+        })
+
+        setMusiciansService().then(musicians => {
+            musicianDispatch(setMusiciansAction(musicians.data))
+        })
+        const url = window.location.href;
+        const index = url.search("singer/");
+        const id = url.slice(index + 7, url.length);
+
         const interval = setInterval(() => {
-            setMusicsService().then(musics => {
-                getPlaylistByUIDService(uid).then(playlist => {    
-                    for (var i = 0; i < musics.data.length; i++) {
-                        musics.data[i]["isInPlaylist"] = isInArray(musics.data[i].id, playlist.data)
-                    }
-                   
-                    musicDispatch(setMusicsAction(musics.data))
-                    var pagination = []
-                    for (let number = 1; number <= musics.data.length / ITEM_PER_PAGE + 1; number++) {
-                        pagination.push(
-                            <Pagination.Item onClick={() => setCurrentPagination(number)} key={number}>
-                                {number}
-                            </Pagination.Item>,
-                        );
-                    }
-                    setPagination(pagination)
+            getSingerByIdService(id).then(singer => {
+                setCurrentFetchedSinger(singer.data)
+                getMusicsBySingerService(singer.data).then(musics => {
+                    getPlaylistByUIDService(uid).then(playlist => {
+                        var numberIsInPlaylist = 0
+                        for (var i = 0; i < musics.data.length; i++) {
+                            var isInPlaylist = isInArray(musics.data[i].id, playlist.data)
+                            musics.data[i]["isInPlaylist"] = isInPlaylist
+                            if (isInPlaylist) numberIsInPlaylist = numberIsInPlaylist + 1
+
+                        }
+                        musicDispatch(setMusicsAction(musics.data))
+                        var pagination = []
+                        for (let number = 1; number <= numberIsInPlaylist / ITEM_PER_PAGE + 1; number++) {
+                            pagination.push(
+                                <Pagination.Item onClick={() => setCurrentPagination(number)} key={number}>
+                                    {number}
+                                </Pagination.Item>,
+                            );
+                        }
+                        setPagination(pagination)
+                    })
                 })
-
-            })
-            setSingersService().then(singers => {
-                singerDispatch(setSingersAction(singers.data))
-
             })
 
-            setGenresService().then(genres => {
-                genreDispatch(setGenresAction(genres.data))
-            })
-
-            setMusiciansService().then(musicians => {
-                musicianDispatch(setMusiciansAction(musicians.data))
-            })
-
-        }, 200);
+        }, 500);
         return () => clearInterval(interval);
-
     }, [])
 
+    const setNameFilter = () => {
+        currentSortName === PLAYLIST_PAGE_SORTNAME_AZ ? setCurrentSortName(PLAYLIST_PAGE_SORTNAME_ZA) : setCurrentSortName(PLAYLIST_PAGE_SORTNAME_AZ)
+        setCurrentFilter(currentSortName === PLAYLIST_PAGE_SORTNAME_AZ ? PLAYLIST_PAGE_SORTNAME_ZA : PLAYLIST_PAGE_SORTNAME_AZ)
 
-    const getJSONMusic = () => {
-        const music = {
-            "name": currentName,
-            "releaseTime": releaseTime.getFullYear() + "-" + (releaseTime.getMonth() + 1) + "-" + releaseTime.getDate(),
-            "genre": (genreState.genres.filter(i => i.name === currentGenre))[0],
-            "singer": (singerState.singers.filter(i => i.name === currentSinger))[0],
-            "musician": (musicianState.musicians.filter(i => i.name === currentMusician))[0]
-        }
-        return JSON.stringify(music);
     }
-    const deleteMusic = () => {
-        handleCloseModalConfirm()
-        deleteMusicService(currentID)
+    const setGenreFilter = () => {
+        currentSortGenre === PLAYLIST_PAGE_SORTGENRE_AZ ? setCurrentSortGenre(PLAYLIST_PAGE_SORTGENRE_ZA) : setCurrentSortGenre(PLAYLIST_PAGE_SORTGENRE_AZ)
+        setCurrentFilter(currentSortGenre === PLAYLIST_PAGE_SORTGENRE_AZ ? PLAYLIST_PAGE_SORTGENRE_ZA : PLAYLIST_PAGE_SORTGENRE_AZ)
+
+    }
+
+    const setSingerFilter = () => {
+        currentSortSinger === PLAYLIST_PAGE_SORTSINGER_AZ ? setCurrentSortSinger(PLAYLIST_PAGE_SORTSINGER_ZA) : setCurrentSortSinger(PLAYLIST_PAGE_SORTSINGER_AZ)
+        setCurrentFilter(currentSortSinger === PLAYLIST_PAGE_SORTSINGER_AZ ? PLAYLIST_PAGE_SORTSINGER_ZA : PLAYLIST_PAGE_SORTSINGER_AZ)
+
+    }
+
+    const setMusicianFilter = () => {
+        currentSortMusician === PLAYLIST_PAGE_SORTMUSICIAN_AZ ? setCurrentSortMusician(PLAYLIST_PAGE_SORTMUSICIAN_ZA) : setCurrentSortMusician(PLAYLIST_PAGE_SORTMUSICIAN_AZ)
+        setCurrentFilter(currentSortMusician === PLAYLIST_PAGE_SORTMUSICIAN_AZ ? PLAYLIST_PAGE_SORTMUSICIAN_ZA : PLAYLIST_PAGE_SORTMUSICIAN_AZ)
+
+    }
+
+    const setReleaseTimeFilter = (e) => {
+        currentSortReleaseTime === PLAYLIST_PAGE_SORTRELEASETIME_AZ ? setCurrentSortReleaseTime(PLAYLIST_PAGE_SORTRELEASETIME_ZA) : setCurrentSortReleaseTime(PLAYLIST_PAGE_SORTRELEASETIME_AZ)
+        setCurrentFilter(currentSortReleaseTime === PLAYLIST_PAGE_SORTRELEASETIME_AZ ? PLAYLIST_PAGE_SORTRELEASETIME_ZA : PLAYLIST_PAGE_SORTRELEASETIME_AZ)
+
+    }
+
+    const filter = (musics) => {
+
+        switch (currentFilter) {
+            case PLAYLIST_PAGE_SORTNAME_AZ:
+                return musics.sort((a, b) => {
+                    return ('' + a.name).localeCompare(b.name);
+                })
+            case PLAYLIST_PAGE_SORTNAME_ZA:
+
+                return musics.sort((a, b) => {
+                    return ('' + b.name).localeCompare(a.name);
+                })
+            case PLAYLIST_PAGE_SORTGENRE_AZ:
+                return musics.sort((a, b) => {
+                    return ('' + a.genre.name).localeCompare(b.genre.name);
+                })
+            case PLAYLIST_PAGE_SORTGENRE_ZA:
+
+                return musics.sort((a, b) => {
+                    return ('' + b.genre.name).localeCompare(a.genre.name);
+                })
+
+            case PLAYLIST_PAGE_SORTSINGER_AZ:
+                return musics.sort((a, b) => {
+                    return ('' + a.singer.name).localeCompare(b.singer.name);
+                })
+            case PLAYLIST_PAGE_SORTSINGER_ZA:
+
+                return musics.sort((a, b) => {
+                    return ('' + b.singer.name).localeCompare(a.singer.name);
+                })
+
+            case PLAYLIST_PAGE_SORTMUSICIAN_AZ:
+                return musics.sort((a, b) => {
+                    return ('' + a.musician.name).localeCompare(b.musician.name);
+                })
+            case PLAYLIST_PAGE_SORTMUSICIAN_ZA:
+
+                return musics.sort((a, b) => {
+                    return ('' + b.musician.name).localeCompare(a.musician.name);
+                })
+
+            case PLAYLIST_PAGE_SORTRELEASETIME_AZ:
+
+                return musics.sort((a, b) => {
+                    return (a.releaseTime.substr(0, 4) - b.releaseTime.substr(0, 4))
+                })
+            case PLAYLIST_PAGE_SORTRELEASETIME_ZA:
+
+                return musics.sort((a, b) => {
+                    return (b.releaseTime.substr(0, 4) - a.releaseTime.substr(0, 4))
+                })
+            default:
+                return musics
+        }
     }
 
     const preProcessChangePlaylist = (mid, isInPlaylist) => {
@@ -152,6 +243,22 @@ export const ListMusic = (props) => {
         }
         console.log(mid)
     }
+
+    const deletePlaylist = () => {
+        //deletePlaylistService(uid, currentMID)
+        handleCloseModalConfirm()
+    }
+    const preProcessDeletePlaylist = (mid) => {
+        handleShowModalConfirm()
+        setCurrentMID(mid)
+    }
+
+    const deleteMusic = () => {
+        handleCloseModalConfirm()
+        deleteMusicService(currentID)
+    }
+
+
     const preProcessDeleteMusic = (id) => {
         handleShowModalConfirm()
         setCurrentID(id)
@@ -169,7 +276,7 @@ export const ListMusic = (props) => {
     const preProcessModifyMusic = (music) => {
         setModalTitle(HOME_PAGE_MODAL_TITLE_MODIFY_MUSIC)
         handleShow()
-        
+
         var date = new Date()
         date.setMonth(parseInt(music.releaseTime.substr(5, 2)) - 1)
         date.setFullYear(music.releaseTime.substr(0, 4))
@@ -183,18 +290,17 @@ export const ListMusic = (props) => {
 
     }
 
-
-    const addMusic = () => {
-        // name, releaseTime, genreID, musicianID, singerID
-
-        if (currentName !== "") {
-            handleClose()
-            const JSONMusic = getJSONMusic()
-            addMusicService(JSONMusic)
-        } else {
-            alert("Please enter song name!")
+    const getJSONMusic = () => {
+        const music = {
+            "name": currentName,
+            "releaseTime": releaseTime.getFullYear() + "-" + (releaseTime.getMonth() + 1) + "-" + releaseTime.getDate(),
+            "genre": (genreState.genres.filter(i => i.name === currentGenre))[0],
+            "singer": (singerState.singers.filter(i => i.name === currentSinger))[0],
+            "musician": (musicianState.musicians.filter(i => i.name === currentMusician))[0]
         }
+        return JSON.stringify(music);
     }
+
 
     const modifyMusic = (id, music) => {
         if (currentName !== "") {
@@ -208,6 +314,7 @@ export const ListMusic = (props) => {
 
 
     return (
+
         <div id="listMusic">
             <Modal centered show={isShowModalConfirm} onHide={handleCloseModalConfirm} backdrop="static" keyboard={false}>
                 <Modal.Header closeButton>
@@ -289,43 +396,61 @@ export const ListMusic = (props) => {
                     <Button variant="danger" onClick={handleClose}>
                         {HOME_PAGE_MODAL_BUTTON_CLOSE}
                     </Button>
-                    <Button variant="success" onClick={modalTitle === HOME_PAGE_MODAL_TITLE_ADD_MUSIC ? addMusic : modifyMusic}>
-                        {modalTitle === HOME_PAGE_MODAL_TITLE_ADD_MUSIC ? HOME_PAGE_MODAL_BUTTON_ADD : HOME_PAGE_MODAL_BUTTON_MODIFY}
+                    <Button variant="success" onClick={modifyMusic}>
+                        {HOME_PAGE_MODAL_BUTTON_MODIFY}
                     </Button>
                 </Modal.Footer>
             </Modal>
 
             <Col>
                 <Row>
-                    <p id="pageTitle">{HOME_PAGE_TITLE}</p>
+                    <Col><p id="pageTitle">{"Singer " + currentFetchedSinger.name}</p></Col>
+                    
+                </Row>
+                <Row>
+                <Col><p>{"Birthday: " + currentFetchedSinger.birthday + ", Sex: " + currentFetchedSinger.sex}</p></Col>
+               
                 </Row>
                 <Row>
                     <Table id="tableMusic" responsive>
                         <thead>
                             <tr>
-                                <th>{HOME_PAGE_TABLE_MUSIC_NAME}</th>
-                                <th>{HOME_PAGE_TABLE_RELEASE_TIME}</th>
-                                <th>{HOME_PAGE_TABLE_GENRE}</th>
-                                <th>{HOME_PAGE_TABLE_MUSICIAN}</th>
-                                <th>{HOME_PAGE_TABLE_SINGER}</th>
-                                <th><Button variant="success" onClick={preProcessAddMusic}>
-                                    <AiOutlineFileAdd />
-                                </Button></th>
+                                <th >
+                                    <div onClick={e => setNameFilter(e.target.value)}>
+                                        {currentSortName}
+                                    </div>
+                                </th>
+                                <th>
+                                    <div onClick={e => setReleaseTimeFilter(e.target.value)}>
+                                        {currentSortReleaseTime}
+                                    </div>
+                                </th>
+                                <th>
+                                    <div onClick={e => setGenreFilter(e.target.value)}>
+                                        {currentSortGenre}
+                                    </div>
+                                </th>
+                                <th>
+                                    <div onClick={e => setMusicianFilter(e.target.value)}>
+                                        {currentSortMusician}
+                                    </div>
+                                </th>
+
+                                <th>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>
                             {
-                                getObjectByPagination(musicState.musics, currentPagination).map(e => {
-                                    var link = `/singer/${e.singer.id}`
+                                filter(getObjectByPagination(musicState.musics, currentPagination)).map(e => {
+
                                     return <tr key={e.id}>
                                         <td>{e.name}</td>
                                         <td>{e.releaseTime}</td>
                                         <td>{e.genre.name}</td>
                                         <td>{e.musician.name}</td>
-                                        <td><a href={link}>{e.singer.name}</a></td>
                                         <td>
                                             <Button className="heartButton" onClick={() => preProcessChangePlaylist(e.id, e.isInPlaylist)} variant="info">
-
                                                 {e.isInPlaylist === true ? <AiFillHeart /> : <AiOutlineHeart />}
                                             </Button>
                                             <Button className="modifyButton" onClick={() => preProcessModifyMusic(e)} variant="warning">
@@ -336,6 +461,8 @@ export const ListMusic = (props) => {
                                             </Button>
                                         </td>
                                     </tr>
+
+
                                 })
                             }
                         </tbody>
@@ -344,6 +471,8 @@ export const ListMusic = (props) => {
                 </Row>
             </Col>
         </div>
-    );
-};
+    )
+
+
+}
 

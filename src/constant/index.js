@@ -6,6 +6,7 @@ export const HEADER_HOME = "Home"
 export const HEADER_GENRE = "Genre"
 export const HEADER_MUSICAN = "Musican"
 export const HEADER_SINGER = "Singer"
+export const HEADER_PLAYLIST = "Playlist"
 
 export const FOOTER_QUOTE = "TMA Solutions Training"
 export const FOOTER_GITHUB = "https://github.com/vutuanhai237"

@@ -12,6 +12,10 @@ export const setSingerQuantitiesService = async () => {
     return result
 }
 
+export const getSingerByIdService = async(id) => {
+    const result = await axios(`http://${HOST}:${PORT}/singer?id=${id}`)
+    return result      
+}
 export const deleteSingerService = async (id) => {
     var config = {
         method: 'delete',

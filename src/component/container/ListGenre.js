@@ -134,12 +134,18 @@ export const ListGenre = (props) => {
 
     const addGenre = () => {
         // name, releaseTime, genreID, GenreianID, singerID
+        for (var i = 0; i < genreState.genreQuantities.length; i++) {
+            if (currentName.toUpperCase() === genreState.genreQuantities[i].genre.name.toUpperCase()) {
+                alert("Please type different genre name!")
+                return
+            }
+        }
         if (currentName !== "") {
             handleClose()
             const JSONGenre = getJSONGenre()
             addGenreService(JSONGenre)
         } else {
-            alert("Please enter song name!")
+            alert("Please enter genre name!")
         }
     }
 
