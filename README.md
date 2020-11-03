@@ -1,6 +1,10 @@
 # MusicManagementClient
 
-Techstack: ReactJS, Reddux
+Techstack: ReactJS, Redux
+
+Demo (extended version):
+
+[![DemoExtended](http://img.youtube.com/vi/VhWpry-ytkE/0.jpg)](http://www.youtube.com/watch?v=VhWpry-ytkE "DemoExtended")
 
 Demo: 
 
