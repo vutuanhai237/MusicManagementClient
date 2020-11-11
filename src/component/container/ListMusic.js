@@ -153,8 +153,14 @@ export const ListMusic = (props) => {
         console.log(mid)
     }
     const preProcessDeleteMusic = (id) => {
-        handleShowModalConfirm()
-        setCurrentID(id)
+        const currentMusic = musicState.musics.filter(item => item.id === id)
+        if (currentMusic[0].isInPlaylist === true) {
+            alert("Please unlike this song before delete it!")
+        } else {
+            handleShowModalConfirm()
+            setCurrentID(id)
+        }
+        
     }
     const preProcessAddMusic = () => {
         setModalTitle(HOME_PAGE_MODAL_TITLE_ADD_MUSIC)
